@@ -8,13 +8,11 @@ print("STARTING BOT.PY")
 
 
 FAQ_CHANNEL_ID = 1465977472125374527  # <-- replace with your #faq channel ID
-FAQ_MESSAGE_TAG = "faq"
-
 
 TOKEN = os.getenv("BOT")
 
 if not TOKEN or len(TOKEN) < 50:
-    raise ValueError("Missing/invalid token. Set DISCORD_BOT_TOKEN env var.")
+    raise ValueError("Missing/invalid token. Set BOT env var.")
 
 FAQ_CONTENT = (
     "**Metryc FAQ**\n"
@@ -95,13 +93,31 @@ class FAQSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         key = self.values[0]
-        await interaction.response.send_message(FAQ_ANSWERS[key], ephemeral=True)
+        await interaction.followup.send(FAQ_ANSWERS[key], ephemeral=True)
 
 class FAQView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.add_item(FAQSelect())
+
+FAQ_MESSAGE_ID_FILE = "/tmp/faq_message_id.txt"  
+
+async def get_saved_message_id() -> int | None:
+    try:
+        with open(FAQ_MESSAGE_ID_FILE, "r") as f:
+            return int(f.read().strip())
+    except Exception:
+        return None
+
+def save_message_id(msg_id: int) -> None:
+    try:
+        with open(FAQ_MESSAGE_ID_FILE, "w") as f:
+            f.write(str(msg_id))
+    except Exception:
+        pass
+
 
 @bot.event
 async def on_ready():
@@ -112,27 +128,43 @@ async def on_ready():
         print("Could not find FAQ channel. Check FAQ_CHANNEL_ID and bot permissions.")
         return
 
+    # 1) Try to refresh the same message by ID (most reliable)
+    msg_id = await get_saved_message_id()
+    if msg_id:
+        try:
+            msg = await channel.fetch_message(msg_id)
+            await msg.edit(content=FAQ_CONTENT, view=FAQView())
+            print("Refreshed FAQ message by saved ID.")
+            return
+        except Exception as e:
+            print(f"Could not fetch/edit saved FAQ message (will recover): {e}")
+
+    # 2) Recovery: find an existing bot FAQ message by content prefix
     existing = None
     try:
         async for msg in channel.history(limit=50):
-            if msg.author == bot.user and msg.content and FAQ_MESSAGE_TAG in msg.content:
+            if msg.author == bot.user and (msg.content or "").startswith("**Metryc FAQ**"):
                 existing = msg
                 break
     except discord.Forbidden:
         print("Missing Read Message History permission in #faq.")
         return
 
+    # 3) Edit if found, otherwise post once
     try:
         if existing:
             await existing.edit(content=FAQ_CONTENT, view=FAQView())
-            print("Refreshed existing FAQ message.")
+            save_message_id(existing.id)
+            print("Refreshed existing FAQ message (found by content).")
         else:
-            await channel.send(FAQ_CONTENT, view=FAQView())
-            print("Posted FAQ message.")
+            sent = await channel.send(FAQ_CONTENT, view=FAQView())
+            save_message_id(sent.id)
+            print("Posted FAQ message (new) and saved ID.")
     except discord.Forbidden:
         print("Missing Send Messages permission in #faq.")
     except Exception as e:
         print(f"Could not post/refresh FAQ: {e}")
+
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -145,15 +177,17 @@ async def on_message(message: discord.Message):
 
     # Let other commands/events still work
     await bot.process_commands(message)
+    
+
+
+
 
     
 
-@bot.slash_command(description="Post the Metryc FAQ dropdown in this channel")
+@bot.slash_command(description="Show the Metryc FAQ menu (ephemeral)")
 async def faq(ctx: discord.ApplicationContext):
-    await ctx.respond(
-        "**Metryc FAQ**\nUse the menu below to get quick answers to common questions.\n\nIf your question isn’t listed, check out the Help Center.",
-        view=FAQView()
-    )
+    await ctx.respond(FAQ_CONTENT, view=FAQView(), ephemeral=True)
+
 
 if __name__ == "__main__":
     try:
