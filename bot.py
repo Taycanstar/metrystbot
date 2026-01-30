@@ -21,7 +21,6 @@ FAQ_CONTENT = (
 )
 # ==================
 
-
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -67,24 +66,99 @@ FAQ_ANSWERS = {
 
     "**Let a moderator know if you believe you earned a role but didn't receive it!**"
 ),
-    "workout_planning": "**Workout planning**\nSet a plan once. Metryc adjusts future sessions as you log.",
-    "food_logging": "**Food logging**\nLog by text, photo, barcode, or voice. Metryc keeps context.",
-    "pricing": "**Pricing & free trial**\nFree trial, then monthly or yearly plans."
+    "workout_loging": (
+      "**How do I log workouts on Metryc?**\n"
+      "You can log workouts by going to the Workout View by tapping the ⨁ button at the bottom left > tap Workouts > tap Start Workout > Log your sets and Finish the workout" 
+    ),
+   "food_logging": (
+      "**How do I log food on Metryc?**\n"
+      "Log foods by snapping a photo, scanning a food label or barcode, or simply describing it in plain language using text or voice" 
+    ),
+   "platforms_supported":(
+     "**What platforms does Metryc support?**\n"
+     "Metryc currently supports **iOS**.\n"
+     "Android and web are planned, but we don't share dates yet."  
+   ),
+   "report_bug": (
+     "**How do I report a bug?**\n"
+     "Please report bugs in #🐞bug-reports channel with:\n"
+     "• What happened\n"  
+     "• What you expected\n"  
+     "• Screenshots or screen recordings if possible.\n"
+     "Confirmed bugs help us improve Metryc faster for you."
+   ),
+      "suggest_feature": (
+     "**How do I suggest features or ideas?**\n"
+     "Share ideas in #🌐product-ideas or relevant threads\n"
+     "Thoughtful, detailed feedback has the bigges impact and may earn the **Visionary** role."
+   ),
+      "get_help": (
+     "**Who should I contact for help?**\n"
+     "Share feedback in #📱feedback-mobile, contact **support@metryc.ai**, or message moderators directly \n"
+   ),
+    "pricing": (
+    "**Pricing & Free Trial**\n\n"
+    "Metryc Pro includes a **free trial**, so you can try the full experience before committing.\n\n"
+    "**Metryc Pro Plans**\n"
+    "• **Monthly** — **$9.99 / month**\n"
+    "• **Yearly** — **$79.99 / year** (**33% off**)\n"
+    "  → equivalent to **$6.67 / month** when billed yearly\n\n"
+    "You can cancel anytime during the free trial.\n"
+    "If you have questions about billing or your subscription, reach out to a moderator or email **support@metryc.ai**."
+)
+
 }
 
 class FAQSelect(discord.ui.Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label="What is Metryc?",description="Learn what Metryc does and why it’s different", value="what_is_metryc"),
             discord.SelectOption(
-            label="What do the Discord roles mean?",
-            description="A guide to some roles in the Metryc Discord",
-            value="discord_roles",
+                label="What is Metryc?",
+                description="What Metryc does and why it’s different",
+                value="what_is_metryc",
             ),
-            discord.SelectOption(label="Workout planning", value="workout_planning"),
-            discord.SelectOption(label="Food logging", value="food_logging"),
-            discord.SelectOption(label="Pricing & free trial", value="pricing"),
+            discord.SelectOption(
+                label="What do the Discord roles mean?",
+                description="How to earn Pro, Pathfinder, Visionary, and more",
+                value="discord_roles",
+            ),
+            discord.SelectOption(
+                label="How do I log workouts?",
+                description="Logging workouts step by step",
+                value="workout_loging",
+            ),
+            discord.SelectOption(
+                label="How do I log food?",
+                description="Log meals by photo, barcode, text, or voice",
+                value="food_logging",
+            ),
+            discord.SelectOption(
+                label="What platforms does Metryc support?",
+                description="iOS support and future platforms",
+                value="platforms_supported",
+            ),
+            discord.SelectOption(
+                label="How do I report a bug?",
+                description="Report issues and help improve Metryc",
+                value="report_bug",
+            ),
+            discord.SelectOption(
+                label="How do I suggest features?",
+                description="Share ideas and product feedback",
+                value="suggest_feature",
+            ),
+            discord.SelectOption(
+                label="Who should I contact for help?",
+                description="Support, feedback, and moderators",
+                value="get_help",
+            ),
+            discord.SelectOption(
+                label="Pricing & free trial",
+                description="Plans, free trial, and billing details",
+                value="pricing",
+            ),
         ]
+
         super().__init__(
             placeholder="Select a topic to get quick answers",
             min_values=1,
