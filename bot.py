@@ -11,7 +11,7 @@ FAQ_CHANNEL_ID = 1465977472125374527  # <-- replace with your #faq channel ID
 FAQ_MESSAGE_TAG = "faq"
 
 
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("BOT")
 
 if not TOKEN or len(TOKEN) < 50:
     raise ValueError("Missing/invalid token. Set DISCORD_BOT_TOKEN env var.")
